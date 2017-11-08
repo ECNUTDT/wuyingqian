@@ -5,7 +5,7 @@
 #define M 20
 
 /*
-compile   gcc -o setip Setup.c -L. -lpbc -lgmp
+compile   gcc -o setup Setup.c -L. -lpbc -lgmp
 execute   ./setup < ../../data/param/a.param
 */
 
@@ -78,7 +78,7 @@ int main(int argc,char **argv){
 	element_fprintf(pp,"\"v'\":\"%B\",\n",vl);
 	for(i=0;i<M;i++)
 		element_fprintf(pp,"\"v-%d\":\"%B\",\n",i+1,v[i]);
-	element_fprintf(pp,"\"A\":\%B\"\n}",A);
+	element_fprintf(pp,"\"A\":\"%B\"\n}",A);
 	fclose(pp);
 	
 	
