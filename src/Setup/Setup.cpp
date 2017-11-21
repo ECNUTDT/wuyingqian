@@ -1,13 +1,23 @@
 #include "/usr/local/include/pbc/pbc.h"
 #include "/usr/local/include/pbc/pbc_test.h"
 #include "../mn.h"
-#include<stdio.h>
-
-
+#include<iostream>
+#include<json/json.h>
+#include<fstream>
+#include<string>
+#include<sstream>
+using namespace std;
 /*
-compile   gcc -o setup Setup.c -L. -lpbc -lgmp
+compile   g++ -o setup Setup.cpp -L. -lpbc -lgmp -ljson
 execute   ./setup < ../../data/param/a.param
 */
+
+unsigned char* transform(element_t e){
+	int length=element_length_in_bytes(e);
+	unsigned char* p=new unsigned char[length+1];
+	element_to_bytes(p,e);
+	return p;
+}
 
 int main(int argc,char **argv){
 	pairing_t pairing;
@@ -61,6 +71,8 @@ int main(int argc,char **argv){
 	for(i=0;i<M;i++)
 		element_pow_zn(v[i],g,z[i]);
 	pairing_apply(A,g1,g2,pairing);
+
+
 	
 	// write y to MK file
 	FILE *mk;
@@ -68,8 +80,15 @@ int main(int argc,char **argv){
 	element_fprintf(mk,"{\"y\":\"%B\"}",y);
 	fclose(mk);
 	
+
+	Json::Value root;
+	Json::StyledWriter sw;
+	ofstream os;
+	ostringstream oss;
+	string str,str2;
+
 	// write values to PP file
-	FILE *pp;
+	/*FILE *pp;
 	pp=fopen("../../data/setup_data/PP","w+");
 	element_fprintf(pp,"{\n\"g1\":\"%B\",\n",g1);
 	element_fprintf(pp,"\"g2\":\"%B\",\n",g2);
@@ -79,7 +98,30 @@ int main(int argc,char **argv){
 	for(i=0;i<M;i++)
 		element_fprintf(pp,"\"v-%d\":\"%B\",\n",i+1,v[i]);
 	element_fprintf(pp,"\"A\":\"%B\"\n}",A);
-	fclose(pp);
+	fclose(pp);*/
+
+	os.open("../../data/setup_data/PP");
+	root["g1"]=Json::Value((char*)transform(g1));
+	root["g2"]=Json::Value((char*)transform(g2));
+	str="t-";
+	for(i=0;i<=N;i++){
+		oss<<str<<i;
+		str2=oss.str();
+		oss.str("");
+		root[str2]=Json::Value((char*)transform(t[i]));
+	}
+	root["vl"]=Json::Value((char*)transform(vl));
+	str="v-";
+	for(i=0;i<M;i++){
+		oss<<str<<i;
+		str2=oss.str();
+		oss.str("");
+		root[str2]=Json::Value((char*)transform(v[i]));
+	}
+	root["A"]=Json::Value((char*)transform(A));
+	os<<sw.write(root);
+	os.close();
+
 	
 	
 	element_clear(g1);
