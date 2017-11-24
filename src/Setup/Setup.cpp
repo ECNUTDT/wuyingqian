@@ -13,11 +13,22 @@ execute   ./setup < ../../data/param/a.param
 */
 
 unsigned char* transform(element_t e){
-	int length=element_length_in_bytes(e);
+	int length=element_length_in_bytes_compressed(e);
+	//int length = element_length_in_bytes(e);
+	unsigned char* p=new unsigned char[length+1];
+	element_to_bytes_compressed(p,e);
+	//element_to_bytes(p,e);
+	return p;
+}
+
+unsigned char* transformA(element_t e){
+	int length = element_length_in_bytes(e);
 	unsigned char* p=new unsigned char[length+1];
 	element_to_bytes(p,e);
 	return p;
 }
+
+
 
 int main(int argc,char **argv){
 	pairing_t pairing;
@@ -118,7 +129,7 @@ int main(int argc,char **argv){
 		oss.str("");
 		root[str2]=Json::Value((char*)transform(v[i]));
 	}
-	root["A"]=Json::Value((char*)transform(A));
+	root["A"]=Json::Value((char*)transformA(A));
 	os<<sw.write(root);
 	os.close();
 
